@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wether app</title>
+    <style>
+      * {
+    margin: 0px;
+    padding: 0px;
+    box-sizing: border-box;
+    font-family: Whitney, -apple-system, BlinkMacSystemFont, Segoe UI,
+      Roboto, Helvetica, Arial, sans-serif;
+      background-color: rgb(153, 192, 179);
+  }
+      .mapouter {
+        position: relative;
+        text-align: right;
+        height: 500px;
+        width: 856px;
+      }
+      .gmap_canvas {
+        overflow: hidden;
+        background: none !important;
+        height: 500px;
+        width: 856px;
+      }
+      #main{
+        display: flex;
+        justify-content: center;
+        /* align-items: center; */
+        gap: 20px;
+        margin: 30px;
+
+      }
+      .sunlogo{
+        height: 100px;
+       
+      }
+      .sc{
+        display: flex;
+       justify-content: center;
+       margin-top: 30px;
+       
+       
+      }
+      .sc> input, button{
+        border-radius: 10px;
+        height: 30px;
+        padding-left: 3px;
+        margin-left: 3px;
+        border-color: rgb(229, 214, 214);
+        cursor: pointer;
+
+      }
+    </style>
+   
+  </head>
+
+
+  <body onload="getLocation()" >
+    <div class="sc">
+      <input type="text"   id="query" placeholder="Enter city name" />
+    <button  onclick="getData()">Search</button>
+    </div>
+    
+    <div id="main">
+
+
+      <div id="container">
+        <!-- append data here -->
+      </div>
+      <!-- html part of map API -->
+      <div class="mapouter">
+        <div class="gmap_canvas">
+          <iframe
+            width="856"
+            height="500"
+            id="gmap_canvas"
+            frameborder="0"
+            scrolling="no"
+            marginheight="0"
+            marginwidth="0"
+          ></iframe>
+        </div>
+      </div>
+
+
+    </div>
+
+  </body>
+</html>
+
+<script>
+   // code to print wether data in console.
+   //openweathermap.org/api
+  let my_api_wether_key = "472c2e36565a3404228945cc3d51c7f4";
+
+  //      https://api.openweathermap.org/data/2.5/weather?q={city name}&appid={API key}
+
+  //     https://api.openweathermap.org/data/2.5/weather?q=patna&appid=472c2e36565a3404228945cc3d51c7f4
+
+  function getData() {
+    let city = document.getElementById("query").value;
+
+    let url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=472c2e36565a3404228945cc3d51c7f4`;
+    //  templet litral with backticks
+
+    fetch(url)
+      .then(function (res) {
+        return res.json();
+      })
+      .then(function (res) {
+        console.log(res);
+        append(res);
+      })
+      .catch(function (err) {
+        alert("Wrong city name");
+        console.log(err);
+      });
+  }
+  //     link   map Api site,    https://www.embedgooglemap.net/
+  //      link of map image,     "https://maps.google.com/maps?q=patna&t=&z=13&ie=UTF8&iwloc=&output=embed"
+
+  function append(data) {
+    let url = `https://maps.google.com/maps?q=${data.name}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
+
+    let container = document.getElementById("container");
+
+    container.innerHTML = null;                //  to clear container when we will search for another city
+
+let h2 = document.createElement("h2");     //  for city name
+h2.innerText = data.name;
+
+let temp = document.createElement("p");     
+temp.innerText=`Temprature:-${((data.main.temp)-273.15).toFixed(2)} °C `;   // for average temprature
+
+let min_temp=document.createElement("p");
+min_temp.innerText=`Min temprature:-${((data.main.temp_min)-273.15).toFixed(2)}  °C`;
+
+
+let max_temp=document.createElement("p");
+max_temp.innerText=`Max temprature:-${((data.main.temp_max)-273.15).toFixed(2)}  °C`;
+
+let wind=document.createElement("p");
+wind.innerText=`Wind speed:-${(data.wind.deg)} km/hr`;
+
+let clouds=document.createElement("p");
+clouds.innerText=`Clouds:-${(data.clouds.all)} oktas `;
+
+let sunrisediv=document.createElement("div");
+
+let sunriseimg=document.createElement("img");
+sunriseimg.setAttribute("class", "sunlogo");
+sunriseimg.src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTwhVKivafklSOxyRH8pyFOa19B8HSbaS4PUg&usqp=CAU"
+
+let sunrise=document.createElement("p");
+sunrise.innerText=`Sunrise:-${(data.sys.sunrise)} MS AM`;
+sunrisediv.append(sunriseimg,sunrise)
+
+let sunsetdiv=document.createElement("div");
+
+let sunsetimg=document.createElement("img");
+sunsetimg.setAttribute("class", "sunlogo");
+sunsetimg.src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvV-B38OvylKWCDGfzvHilwsNCK_biGlAgeA&usqp=CAU"
+
+let sunset=document.createElement("p");
+sunset.innerText=`Sunset:-${(data.sys.sunset)} MS PM `;
+sunsetdiv.append(sunsetimg,sunset)
+
+container.append(h2, temp,min_temp,max_temp,wind,clouds,sunrisediv,sunsetdiv, );
+
+    let iframe = document.getElementById("gmap_canvas");
+    iframe.src = url;
+  }
+   // this code is fore current locatuon 
+   // code is from MDN dock, Geolocation.getCurrentPosition()
+   // api link is from  openweathermap.org/api
+
+  function getLocation() {
+    navigator.geolocation.getCurrentPosition(success);
+
+    function success(pos) {
+      const crd = pos.coords;
+
+      console.log("Your current position is:");
+      console.log(`Latitude : ${crd.latitude}`);
+      console.log(`Longitude: ${crd.longitude}`);
+      console.log(`More or less ${crd.accuracy} meters.`);
+
+      getWeatherOnLocation(crd.latitude,crd.longitude)
+    }
+  }
+
+  getLocation();
+
+  
+
+  function getWeatherOnLocation(lat,lon) {
+    
+ //openweathermap.org/api
+  
+    let url=`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=472c2e36565a3404228945cc3d51c7f4`;
+    //  templet litral with backticks
+// api key and link is from  openweathermap.org/api
+    fetch(url)
+      .then(function (res) {
+        return res.json();
+      })
+      .then(function (res) {
+        console.log(res);
+        append(res);
+      })
+      .catch(function (err) {
+        alert("Wrong city name");
+        console.log(err);
+      });
+  }
+</script>
